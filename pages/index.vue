@@ -556,7 +556,7 @@ function openEditStationDialog(station) {
 
 async function saveEditedStation() {
   try {
-    await $fetch("/api/station.put", {
+    await $fetch("/api/station", {
       method: "PUT",
       body: toRaw(selectedStation),
     });
