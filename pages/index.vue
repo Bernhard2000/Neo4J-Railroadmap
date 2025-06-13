@@ -265,6 +265,34 @@
         <button type="submit">Create Rail Line</button>
       </form>
     </Panel>
+
+    <Panel header="Train Simulation" :toggleable="true">
+      <div class="p-field">
+        <label for="trainStartStation">Start Station:</label>
+        <Select
+          id="trainStartStation"
+          v-model="trainSimulation.startNodeName"
+          :options="stations"
+          optionLabel="name"
+          placeholder="Select Start Station"
+          :editable="true"
+          :showClear="true"
+        />
+      </div>
+      <div class="p-field">
+        <label for="trainEndStation">End Station:</label>
+        <Select
+          id="trainEndStation"
+          v-model="trainSimulation.endNodeName"
+          :options="stations"
+          optionLabel="name"
+          placeholder="Select End Station"
+          :editable="true"
+          :showClear="true"
+        />
+      </div>
+      <Button label="Start Train" icon="pi pi-play" @click="startTrainAnimation" />
+    </Panel>
   </div>
 </template>
 
@@ -322,6 +350,14 @@ const newRelationship = reactive({
   relationshipType: "CONNECTS", // Hardcode relationship type for rail lines
   targetNodeName: "",
   distance: null, // Add distance property for relationships
+});
+
+let trainMarker = null;
+let animationInterval = null;
+
+const trainSimulation = reactive({
+  startNodeName: null,
+  endNodeName: null,
 });
 
 // Map related variables
@@ -568,6 +604,101 @@ async function deleteSelectedConnection() {
     refresh(); // Refresh the list of relationships and update map lines
   } catch (e) {
     alert("Error deleting connection: " + e.message);
+  }
+}
+
+async function startTrainAnimation() {
+  if (
+    !LeafletInstance ||
+    !trainSimulation.startNodeName ||
+    !trainSimulation.endNodeName
+  ) {
+    alert("Please select both start and end stations for the train simulation.");
+    return;
+  }
+
+  // Clear any existing animation
+  if (animationInterval) {
+    clearInterval(animationInterval);
+  }
+  if (trainMarker) {
+    map.removeLayer(trainMarker);
+    trainMarker = null;
+  }
+
+  try {
+    // Fetch the shortest path from the backend
+    const path = await $fetch("/api/query", {
+      method: "POST",
+      body: {
+        startNodeName: trainSimulation.startNodeName.name,
+        endNodeName: trainSimulation.endNodeName.name,
+      },
+    });
+
+    if (!path || path.length === 0) {
+      alert("No path found between the selected stations.");
+      return;
+    }
+
+    // Create a custom icon for the train (using a placeholder for now)
+    const trainIcon = LeafletInstance.icon({
+      iconUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/svgs/solid/train.svg", // Pixel art steam engine placeholder
+      shadowUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+      iconSize: [32, 32], // Adjusted size for a train icon
+      iconAnchor: [16, 32], // Adjusted anchor
+      popupAnchor: [0, -20],
+      shadowSize: [41, 41],
+    });
+
+    trainMarker = LeafletInstance.marker([path[0].sourceLat, path[0].sourceLng], {
+      icon: trainIcon,
+    }).addTo(map);
+
+    let currentSegmentIndex = 0;
+    let currentStepInSegment = 0;
+
+    const TRAIN_SPEED_KMH = 160000; // km/h
+    const ANIMATION_INTERVAL_MS = 50; // ms
+
+    animationInterval = setInterval(() => {
+      if (currentSegmentIndex < path.length) {
+        const segment = path[currentSegmentIndex];
+        const startPoint = LeafletInstance.latLng(segment.sourceLat, segment.sourceLng);
+        const endPoint = LeafletInstance.latLng(segment.targetLat, segment.targetLng);
+
+        // Calculate duration for this segment based on distance and speed
+        const segmentDistanceKm = segment.distance;
+        const segmentDurationHours = segmentDistanceKm / TRAIN_SPEED_KMH;
+        const segmentDurationMs = segmentDurationHours * 3600 * 1000;
+
+        // Calculate total steps for this segment to maintain fixed speed
+        const totalStepsForSegment = Math.max(
+          1,
+          Math.round(segmentDurationMs / ANIMATION_INTERVAL_MS)
+        );
+
+        if (currentStepInSegment <= totalStepsForSegment) {
+          const ratio = currentStepInSegment / totalStepsForSegment;
+          const lat = startPoint.lat + (endPoint.lat - startPoint.lat) * ratio;
+          const lng = startPoint.lng + (endPoint.lng - startPoint.lng) * ratio;
+          trainMarker.setLatLng([lat, lng]);
+          currentStepInSegment++;
+        } else {
+          currentSegmentIndex++;
+          currentStepInSegment = 0;
+        }
+      } else {
+        clearInterval(animationInterval);
+        alert("Train animation finished!");
+        map.removeLayer(trainMarker);
+        trainMarker = null;
+      }
+    }, ANIMATION_INTERVAL_MS);
+  } catch (e) {
+    alert("Error starting train animation: " + e.message);
   }
 }
 </script>
