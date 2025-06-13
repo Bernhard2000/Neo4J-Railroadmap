@@ -4,32 +4,183 @@
 
     <section>
       <h2>Station Map</h2>
-      <div id="map" style="height: 600px; width: 100%"></div>
+      <div id="map" style="height: 60vh; width: 100%"></div>
     </section>
 
-    <Panel header="Existing Stations" :toggleable="true">
-      <p v-if="pending">Loading stations...</p>
-      <p v-else-if="error">Error: {{ error.message }}</p>
-      <div v-else class="station-list-container">
-        <ul>
-          <li v-for="(station, index) in stations" :key="index">
-            {{ station.name }} ({{ station.latitude }}, {{ station.longitude }})
-            <div class="button-group">
-              <Button
-                label="Edit"
-                class="p-button-rounded p-button-text p-button-sm"
-                @click="openEditStationDialog(station)"
-              />
-              <Button
-                label="Delete"
-                class="p-button-rounded p-button-text p-button-sm p-button-danger"
-                @click="confirmDeleteStation(station)"
-              />
+    <div class="main-content">
+      <Panel header="Train Simulation" :toggleable="true">
+        <div class="p-field">
+          <label for="trainStartStation">Start Station:</label>
+          <Select
+            id="trainStartStation"
+            v-model="trainSimulation.startNodeName"
+            :options="stations"
+            optionLabel="name"
+            placeholder="Select Start Station"
+            :editable="true"
+            :showClear="true"
+          />
+        </div>
+        <div class="p-field">
+          <label for="trainEndStation">End Station:</label>
+          <Select
+            id="trainEndStation"
+            v-model="trainSimulation.endNodeName"
+            :options="stations"
+            optionLabel="name"
+            placeholder="Select End Station"
+            :editable="true"
+            :showClear="true"
+          />
+        </div>
+        <Button label="Start Train" icon="pi pi-play" @click="startTrainAnimation" />
+      </Panel>
+
+      <Button
+        label="Manage Data"
+        icon="pi pi-database"
+        class="p-button-raised p-button-primary"
+        @click="displayManageDataDialog = true"
+      />
+    </div>
+
+    <!-- Main Data Management Dialog -->
+    <Dialog
+      v-model:visible="displayManageDataDialog"
+      header="Manage Station and Rail Line Data"
+      :modal="true"
+      :style="{ width: '75vw' }"
+      :breakpoints="{ '960px': '100vw' }"
+      class="p-fluid"
+      :contentStyle="{ maxHeight: '70vh', overflow: 'auto' }"
+    >
+      <div class="p-grid p-nogutter">
+        <div class="p-col-12 p-md-6">
+          <Panel header="Existing Stations" :toggleable="true">
+            <p v-if="pending">Loading stations...</p>
+            <p v-else-if="error">Error: {{ error.message }}</p>
+            <div v-else class="station-list-content">
+              <ul>
+                <li v-for="(station, index) in stations" :key="index">
+                  {{ station.name }} ({{ station.latitude }}, {{ station.longitude }})
+                  <div class="button-group">
+                    <Button
+                      label="Edit"
+                      class="p-button-rounded p-button-text p-button-sm"
+                      @click="openEditStationDialog(station)"
+                    />
+                    <Button
+                      label="Delete"
+                      class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                      @click="confirmDeleteStation(station)"
+                    />
+                  </div>
+                </li>
+              </ul>
             </div>
-          </li>
-        </ul>
+          </Panel>
+        </div>
+        <div class="p-col-12 p-md-6">
+          <Panel header="Insert New Station" :toggleable="true">
+            <form @submit.prevent="addNode">
+              <div>
+                <label for="nodeName">Station Name:</label>
+                <input id="nodeName" v-model="newNode.name" type="text" required />
+              </div>
+              <div>
+                <label for="nodeCity">City:</label>
+              </div>
+              <div>
+                <label for="nodeLatitude">Latitude:</label>
+                <input
+                  id="nodeLatitude"
+                  v-model.number="newNode.latitude"
+                  type="number"
+                  step="any"
+                />
+              </div>
+              <div>
+                <label for="nodeLongitude">Longitude:</label>
+                <input
+                  id="nodeLongitude"
+                  v-model.number="newNode.longitude"
+                  type="number"
+                  step="any"
+                />
+              </div>
+              <button type="submit">Add Station</button>
+            </form>
+          </Panel>
+        </div>
+        <div class="p-col-12 p-md-6">
+          <Panel header="Existing Rail Lines" :toggleable="true">
+            <p v-if="pending">Loading rail lines...</p>
+            <p v-else-if="error">Error: {{ error.message }}</p>
+            <div v-else class="station-list-content">
+              <ul>
+                <li v-for="(relationship, index) in relationships" :key="index">
+                  {{ relationship.sourceName }} --({{ relationship.distance }} km)
+                  {{ relationship.targetName }}
+                  <div class="button-group">
+                    <Button
+                      label="Edit"
+                      class="p-button-rounded p-button-text p-button-sm"
+                      @click="openEditConnectionDialog(relationship)"
+                    />
+                    <Button
+                      label="Delete"
+                      class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                      @click="confirmDeleteConnection(relationship)"
+                    />
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </Panel>
+        </div>
+        <div class="p-col-12 p-md-6">
+          <Panel header="Create New Rail Line" :toggleable="true">
+            <form @submit.prevent="addRelationship">
+              <div>
+                <label for="sourceNodeName">Source Station:</label>
+                <Select
+                  id="sourceNodeName"
+                  v-model="newRelationship.sourceNodeName"
+                  :options="stations"
+                  optionLabel="name"
+                  placeholder="Select a Station"
+                  :editable="true"
+                  :showClear="true"
+                  required
+                />
+              </div>
+              <div>
+                <label for="targetNodeName">Target Station:</label>
+                <Select
+                  id="targetNodeName"
+                  v-model="newRelationship.targetNodeName"
+                  :options="stations"
+                  optionLabel="name"
+                  placeholder="Select a Station"
+                  :editable="true"
+                  :showClear="true"
+                  required
+                />
+              </div>
+              <button type="submit">Create Rail Line</button>
+            </form>
+          </Panel>
+        </div>
       </div>
-    </Panel>
+      <template #footer>
+        <Button
+          label="Close"
+          icon="pi pi-times"
+          class="p-button-text"
+          @click="displayManageDataDialog = false"
+        />
+      </template>
+    </Dialog>
 
     <!-- Edit Station Dialog -->
     <Dialog
@@ -101,31 +252,6 @@
         />
       </template>
     </Dialog>
-
-    <Panel header="Existing Rail Lines" :toggleable="true">
-      <p v-if="pending">Loading rail lines...</p>
-      <p v-else-if="error">Error: {{ error.message }}</p>
-      <div v-else class="station-list-container">
-        <ul>
-          <li v-for="(relationship, index) in relationships" :key="index">
-            {{ relationship.sourceName }} --({{ relationship.distance }} km)
-            {{ relationship.targetName }}
-            <div class="button-group">
-              <Button
-                label="Edit"
-                class="p-button-rounded p-button-text p-button-sm"
-                @click="openEditConnectionDialog(relationship)"
-              />
-              <Button
-                label="Delete"
-                class="p-button-rounded p-button-text p-button-sm p-button-danger"
-                @click="confirmDeleteConnection(relationship)"
-              />
-            </div>
-          </li>
-        </ul>
-      </div>
-    </Panel>
 
     <!-- Edit Connection Dialog -->
     <Dialog
@@ -202,97 +328,6 @@
         />
       </template>
     </Dialog>
-
-    <Panel header="Insert New Station" :toggleable="true">
-      <form @submit.prevent="addNode">
-        <div>
-          <label for="nodeName">Station Name:</label>
-          <input id="nodeName" v-model="newNode.name" type="text" required />
-        </div>
-        <div>
-          <label for="nodeCity">City:</label>
-        </div>
-        <div>
-          <label for="nodeLatitude">Latitude:</label>
-          <input
-            id="nodeLatitude"
-            v-model.number="newNode.latitude"
-            type="number"
-            step="any"
-          />
-        </div>
-        <div>
-          <label for="nodeLongitude">Longitude:</label>
-          <input
-            id="nodeLongitude"
-            v-model.number="newNode.longitude"
-            type="number"
-            step="any"
-          />
-        </div>
-        <button type="submit">Add Station</button>
-      </form>
-    </Panel>
-
-    <Panel header="Create New Rail Line" :toggleable="true">
-      <form @submit.prevent="addRelationship">
-        <div>
-          <label for="sourceNodeName">Source Station:</label>
-          <Select
-            id="sourceNodeName"
-            v-model="newRelationship.sourceNodeName"
-            :options="stations"
-            optionLabel="name"
-            placeholder="Select a Station"
-            :editable="true"
-            :showClear="true"
-            required
-          />
-        </div>
-        <div>
-          <label for="targetNodeName">Target Station:</label>
-          <Select
-            id="targetNodeName"
-            v-model="newRelationship.targetNodeName"
-            :options="stations"
-            optionLabel="name"
-            placeholder="Select a Station"
-            :editable="true"
-            :showClear="true"
-            required
-          />
-        </div>
-        <button type="submit">Create Rail Line</button>
-      </form>
-    </Panel>
-
-    <Panel header="Train Simulation" :toggleable="true">
-      <div class="p-field">
-        <label for="trainStartStation">Start Station:</label>
-        <Select
-          id="trainStartStation"
-          v-model="trainSimulation.startNodeName"
-          :options="stations"
-          optionLabel="name"
-          placeholder="Select Start Station"
-          :editable="true"
-          :showClear="true"
-        />
-      </div>
-      <div class="p-field">
-        <label for="trainEndStation">End Station:</label>
-        <Select
-          id="trainEndStation"
-          v-model="trainSimulation.endNodeName"
-          :options="stations"
-          optionLabel="name"
-          placeholder="Select End Station"
-          :editable="true"
-          :showClear="true"
-        />
-      </div>
-      <Button label="Start Train" icon="pi pi-play" @click="startTrainAnimation" />
-    </Panel>
   </div>
 </template>
 
@@ -306,6 +341,9 @@ import Button from "primevue/button"; // Import Button
 const { data, pending, error, refresh } = await useFetch("/api/data");
 const stations = computed(() => data.value?.stations || []);
 const relationships = computed(() => data.value?.relationships || []);
+
+// Reactive variable for the main data management dialog
+const displayManageDataDialog = ref(false);
 
 // Reactive variables for editing station
 const displayEditStationDialog = ref(false);
@@ -628,7 +666,7 @@ async function startTrainAnimation() {
 
   try {
     // Fetch the shortest path from the backend
-    const path = await $fetch("/api/query", {
+    let path = await $fetch("/api/query", {
       method: "POST",
       body: {
         startNodeName: trainSimulation.startNodeName.name,
@@ -641,10 +679,22 @@ async function startTrainAnimation() {
       return;
     }
 
+    // Check if the path needs to be reversed for animation
+    if (path[0].sourceName !== trainSimulation.startNodeName.name) {
+      path = path.reverse().map((segment) => ({
+        sourceName: segment.targetName,
+        sourceLat: segment.targetLat,
+        sourceLng: segment.targetLng,
+        targetName: segment.sourceName,
+        targetLat: segment.sourceLat,
+        targetLng: segment.sourceLng,
+        distance: segment.distance,
+      }));
+    }
+
     // Create a custom icon for the train (using a placeholder for now)
     const trainIcon = LeafletInstance.icon({
-      iconUrl:
-        "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/svgs/solid/train.svg", // Pixel art steam engine placeholder
+      iconUrl: "/steamengine.png", // Place steamengine.png in the nuxt-app/public directory
       shadowUrl:
         "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
       iconSize: [32, 32], // Adjusted size for a train icon
@@ -768,12 +818,46 @@ pre {
   word-wrap: break-word;
 }
 
-.station-list-container {
-  max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid #ddd; /* Optional: add a border to visualize the scrollable area */
+.station-list-content {
+  max-height: 200px; /* Set a max-height for scrollable lists within the dialog */
+  overflow-y: auto; /* Enable vertical scrolling for lists within the dialog */
+  border: 1px solid #ddd; /* Optional: add a border to visualize the area */
   padding: 10px;
   border-radius: 4px;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* PrimeVue grid system for dialog content */
+.p-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  margin-top: -1rem;
+}
+
+.p-grid > .p-col-12 {
+  width: 100%;
+  padding: 1rem;
+}
+
+.p-grid > .p-md-6 {
+  flex: 0 0 50%;
+  max-width: 50%;
+}
+
+@media screen and (max-width: 768px) {
+  .p-grid > .p-md-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
 }
 
 .button-group {

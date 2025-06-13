@@ -8,12 +8,13 @@ export default eventHandler(async (event) => {
     const query = `
       MATCH (start:Station {name: $startNodeName}), (end:Station {name: $endNodeName})
       CALL apoc.algo.dijkstra(start, end, 'CONNECTS', 'distance') YIELD path, weight
-      UNWIND relationships(path) AS rel
-      MATCH (source)-[rel]->(target)
+      WITH nodes(path) AS nodes, relationships(path) AS rels
+      UNWIND RANGE(0, size(nodes) - 2) AS i
+      WITH nodes[i] AS sourceNode, nodes[i+1] AS targetNode, rels[i] AS relationship
       RETURN
-          properties(source) AS sourceNode,
-          properties(target) AS targetNode,
-          properties(rel) AS relationship
+          properties(sourceNode) AS sourceNode,
+          properties(targetNode) AS targetNode,
+          properties(relationship) AS relationship
     `;
 
     const result = await session.run(query, { startNodeName, endNodeName });
