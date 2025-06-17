@@ -3,7 +3,14 @@ import { getNeo4jSession } from '../../server/utils/neo4j';
 export default eventHandler(async (event) => {
   const session = getNeo4jSession();
   try {
-    const { startNodeName, endNodeName } = await readBody(event);
+    const { startNodeName, endNodeName } = getQuery(event);
+
+    if (!startNodeName || !endNodeName) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Missing startNodeName or endNodeName query parameters.',
+      });
+    }
 
     const query = `
       MATCH (start:Station {name: $startNodeName}), (end:Station {name: $endNodeName})
@@ -35,11 +42,11 @@ export default eventHandler(async (event) => {
     });
 
     return pathSegments;
-  } catch (error) {
+  } catch (error : any) {
     console.error('Error fetching shortest path:', error);
     throw createError({
       statusCode: 500,
-      statusMessage: 'Failed to fetch shortest path',
+      statusMessage: `Failed to fetch shortest path ${error.message}`,
     });
   } finally {
     await session.close();

@@ -12,7 +12,7 @@ export default defineNuxtConfig({
     css: {
       exclude: undefined
     }
-  }], '@nuxt/icon'],
+  }]],
   primevue: {
         options: {
             theme: {
@@ -24,6 +24,13 @@ export default defineNuxtConfig({
     'leaflet/dist/leaflet.css'
   ],
   build: {
-    transpile: ['primevue']
+    transpile: ['primevue', 'primeicons']
+  },
+  vite: {
+    server: {
+      fs: {
+        allow: ['node_modules']
+      }
+    }
   }
 })

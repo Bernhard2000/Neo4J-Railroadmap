@@ -4,7 +4,6 @@ export default defineEventHandler(async (event) => {
   const session = getNeo4jSession();
   try {
     const body = await readBody(event);
-    //return { message: 'Connection deletion endpoint hit successfully', body };
     const { sourceNodeName, targetNodeName } = body;
 
     if (!sourceNodeName || !targetNodeName) {

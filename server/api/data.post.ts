@@ -4,7 +4,6 @@ export default defineEventHandler(async (event) => {
   const session = getNeo4jSession();
   try {
     const body = await readBody(event);
-    console.log('Received body for POST:', body); // Keep for debugging
     const { name, city, latitude, longitude } = body;
     const result = await session.run(
       'CREATE (s:Station {name: $name, latitude: $latitude, longitude: $longitude}) RETURN s',

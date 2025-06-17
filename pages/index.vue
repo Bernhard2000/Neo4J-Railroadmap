@@ -7,6 +7,15 @@
       <div id="map" style="height: 60vh; width: 100%"></div>
     </section>
 
+    <div class="import-button-container">
+      <Button
+        label="Import European Cities"
+        icon="pi pi-cloud-download"
+        class="p-button-raised p-button-secondary"
+        @click="importEuropeanCities"
+      />
+    </div>
+
     <div class="main-content">
       <Panel header="Train Simulation" :toggleable="true">
         <div class="p-field">
@@ -645,6 +654,18 @@ async function deleteSelectedConnection() {
   }
 }
 
+async function importEuropeanCities() {
+  try {
+    await $fetch("/api/import-european-cities", {
+      method: "POST",
+    });
+    alert("European cities imported successfully!");
+    refresh(); // Refresh the list of stations and update map markers
+  } catch (e) {
+    alert("Error importing European cities: " + e.message);
+  }
+}
+
 async function startTrainAnimation() {
   if (
     !LeafletInstance ||
@@ -666,9 +687,9 @@ async function startTrainAnimation() {
 
   try {
     // Fetch the shortest path from the backend
-    let path = await $fetch("/api/query", {
-      method: "POST",
-      body: {
+    let path = await $fetch("/api/path", {
+      method: "GET",
+      query: {
         startNodeName: trainSimulation.startNodeName.name,
         endNodeName: trainSimulation.endNodeName.name,
       },
@@ -695,8 +716,7 @@ async function startTrainAnimation() {
     // Create a custom icon for the train (using a placeholder for now)
     const trainIcon = LeafletInstance.icon({
       iconUrl: "/steamengine.png", // Place steamengine.png in the nuxt-app/public directory
-      shadowUrl:
-        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+      shadowUrl: "/marker-shadow.png",
       iconSize: [32, 32], // Adjusted size for a train icon
       iconAnchor: [16, 32], // Adjusted anchor
       popupAnchor: [0, -20],
@@ -742,7 +762,6 @@ async function startTrainAnimation() {
         }
       } else {
         clearInterval(animationInterval);
-        alert("Train animation finished!");
         map.removeLayer(trainMarker);
         trainMarker = null;
       }
@@ -832,6 +851,13 @@ pre {
   align-items: center;
   gap: 20px;
   padding: 20px;
+}
+
+.import-button-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000; /* Ensure it's above other elements like the map */
 }
 
 /* PrimeVue grid system for dialog content */

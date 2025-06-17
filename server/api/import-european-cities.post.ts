@@ -60,7 +60,8 @@ export default defineEventHandler(async (event) => {
       { from: 'Vienna', to: 'Budapest' },
       { from: 'Salzburg', to: 'Munich' },
       { from: 'Salzburg', to: 'Innsbruck' },
-      { from: 'Munich', to: 'Berlin' },
+      { from: 'Salzburg', to: 'Graz' },
+      { from: 'Nürnberg', to: 'Berlin' },
       { from: 'Munich', to: 'Frankfurt' },
       { from: 'Munich', to: 'Zurich' },
       { from: 'Munich', to: 'Nürnberg' },
@@ -69,7 +70,7 @@ export default defineEventHandler(async (event) => {
       { from: 'Innsbruck', to: 'Zurich' },
       { from: 'Innsbruck', to: 'Verona' },
       { from: 'Rome', to: 'Florence' },
-      { from: 'Rome', to: 'Milan' },
+      { from: 'Verona', to: 'Milan' },
       { from: 'Milan', to: 'Zurich' },
       { from: 'Milan', to: 'Geneva' },
       { from: 'Berlin', to: 'Cologne' },
@@ -77,6 +78,9 @@ export default defineEventHandler(async (event) => {
       { from: 'Zurich', to: 'Geneva' },
       { from: 'Paris', to: 'Cologne' },
       { from: 'Paris', to: 'Geneva' },
+      { from: 'Florence', to: 'Verona' },
+      { from: 'Nürnberg', to: 'Frankfurt' },
+
     ];
 
     // Create relationships between cities based on calculated distance

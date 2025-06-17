@@ -1,4 +1,5 @@
-import { getNeo4jSession, calculateDistance } from '../utils/neo4j';
+import { getNeo4jSession } from '../utils/neo4j';
+import { calculateDistance } from '../utils/calculateDistance';
 
 export default defineEventHandler(async (event) => {
   const session = getNeo4jSession();
