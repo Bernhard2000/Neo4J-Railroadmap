@@ -13,7 +13,6 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Detach DELETE is used to delete the node and all its relationships
     const result = await session.run(
       'MATCH (s:Station {name: $name}) DETACH DELETE s',
       { name }
