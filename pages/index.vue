@@ -3,11 +3,16 @@
     <h1>Neo4j Train Map Viewer</h1>
 
     <section>
-      <h2>Station Map</h2>
-      <div id="map" style="height: 60vh; width: 100%"></div>
+      <div id="map" style="height: 70vh; width: 100%"></div>
     </section>
 
     <div class="import-button-container">
+      <Button
+        label="Manage Data"
+        icon="pi pi-database"
+        class="p-button-raised p-button-primary"
+        @click="displayManageDataDialog = true"
+      />
       <Button
         label="Import European Cities"
         icon="pi pi-cloud-download"
@@ -16,7 +21,7 @@
       />
     </div>
 
-    <div class="main-content">
+    <div>
       <Panel header="Train Simulation" :toggleable="true">
         <div class="p-field">
           <label for="trainStartStation">Start Station:</label>
@@ -44,13 +49,6 @@
         </div>
         <Button label="Start Train" icon="pi pi-play" @click="startTrainAnimation" />
       </Panel>
-
-      <Button
-        label="Manage Data"
-        icon="pi pi-database"
-        class="p-button-raised p-button-primary"
-        @click="displayManageDataDialog = true"
-      />
     </div>
 
     <!-- Main Data Management Dialog -->
@@ -610,7 +608,7 @@ function openEditConnectionDialog(relationship) {
 
 async function saveEditedConnection() {
   try {
-    await $fetch("/api/connection.put", {
+    await $fetch("/api/connection", {
       method: "PUT",
       body: {
         originalSourceNodeName: selectedConnection.originalSourceNodeName,
