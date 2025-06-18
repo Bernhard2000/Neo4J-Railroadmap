@@ -535,7 +535,7 @@ async function addNode() {
 
 async function addRelationship() {
   try {
-    await $fetch("/api/relationship", {
+    await $fetch("/api/connection", {
       method: "POST",
       body: {
         sourceNodeName: newRelationship.sourceNodeName.name, // Extract name from object
@@ -584,7 +584,7 @@ function confirmDeleteStation(station) {
 
 async function deleteSelectedStation() {
   try {
-    await $fetch("/api/station.delete", {
+    await $fetch("/api/station", {
       method: "DELETE",
       body: { name: stationToDelete.name },
     });

@@ -28,6 +28,12 @@ export default defineEventHandler(async (event) => {
       { name: 'Verona', latitude: 45.4384, longitude: 10.9916 },
       { name: 'Nürnberg', latitude: 49.4521, longitude: 11.0767 },
       { name: 'Paris', latitude: 48.8566, longitude: 2.3522 },
+      { name: 'Monaco', latitude: 43.7384, longitude: 7.4246 },
+      { name: 'Marseille', latitude: 43.2965, longitude: 5.3698 },
+      { name: 'Bordeaux', latitude: 44.8378, longitude: -0.5792 },
+      { name: 'Rimini', latitude: 44.0678, longitude: 12.5695 },
+      { name: 'Ljubljana', latitude: 46.0569, longitude: 14.5058 },
+      { name: 'Hamburg', latitude: 53.5511, longitude: 9.9937 },
     ];
 
     for (const city of cities) {
@@ -80,7 +86,19 @@ export default defineEventHandler(async (event) => {
       { from: 'Paris', to: 'Geneva' },
       { from: 'Florence', to: 'Verona' },
       { from: 'Nürnberg', to: 'Frankfurt' },
-
+      { from: 'Monaco', to: 'Marseille' },
+      { from: 'Marseille', to: 'Paris' },
+      { from: 'Marseille', to: 'Bordeaux' },
+      { from: 'Monaco', to: 'Marseille' },
+      { from: 'Rimini', to: 'Florence' },
+      { from: 'Rimini', to: 'Verona' },
+      { from: 'Ljubljana', to: 'Graz' },
+      { from: 'Ljubljana', to: 'Verona' },
+      { from: 'Bordeaux', to: 'Paris' },
+      { from: 'Monaco', to: 'Milan' },
+      { from: 'Hamburg', to: 'Berlin' },
+      { from: 'Hamburg', to: 'Cologne' },
+      { from: 'Geneva', to: 'Marseille' },
     ];
 
     // Create relationships between cities based on calculated distance
