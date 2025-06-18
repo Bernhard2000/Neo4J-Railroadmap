@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Neo4j Data Viewer</h1>
+    <h1>Neo4j Train Map Viewer</h1>
 
     <section>
       <h2>Station Map</h2>
@@ -510,7 +510,7 @@ function drawRailLines(relationshipsToDraw, LeafletInstance) {
 
 async function addNode() {
   try {
-    await $fetch("/api/data", {
+    await $fetch("/api/station", {
       method: "POST",
       body: {
         name: newNode.name,
@@ -838,7 +838,7 @@ pre {
 }
 
 .station-list-content {
-  max-height: 200px; /* Set a max-height for scrollable lists within the dialog */
+  max-height: 300px; /* Set a max-height for scrollable lists within the dialog */
   overflow-y: auto; /* Enable vertical scrolling for lists within the dialog */
   border: 1px solid #ddd; /* Optional: add a border to visualize the area */
   padding: 10px;
